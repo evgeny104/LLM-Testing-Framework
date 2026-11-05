@@ -5,6 +5,7 @@ AnswerRelevancyMetric — судья-модель (GroqJudge) оценивает
 Дороже и медленнее уровня 1, ловит семантику, а не подстроки.
 """
 import pytest
+import os
 # assert_test — раннер DeepEval. Принимает LLMTestCase + список метрик,
 # сам зовёт каждую метрику через judge и падает, если хотя бы одна < threshold.
 from deepeval import assert_test
@@ -28,12 +29,17 @@ from evaluation.judge_model import GroqJudge
 
 # module-level маркер: все тесты этого файла получают @pytest.mark.llm_judge.
 # Позволяет фильтровать через `pytest -m llm_judge` / `-m "not llm_judge"`.
-pytestmark = pytest.mark.llm_judge
+pytestmark = [
+    pytest.mark.llm_judge,
+    pytest.mark.skipif(not os.getenv("GROQ_API_KEY"), reason="GROQ_API_KEY is not set"),
+]
 
 # один экземпляр judge на весь файл — переиспользуется всеми тестами.
-judge = GroqJudge()
+@pytest.fixture(scope="module")
+def judge():
+    return GroqJudge()
 
-def test_answer_relevancy():
+def test_answer_relevancy(judge):
     # LLMTestCase собирает данные, которые метрика будет оценивать.
     # Тут нужны только input + actual_output — AnswerRelevancy другие поля не читает.
     test_case = LLMTestCase(

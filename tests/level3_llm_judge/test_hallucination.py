@@ -5,6 +5,7 @@ HallucinationMetric просит судью оценить, выходил ли 
 DeepEval 4.x: 1 = хорошо, 0 = плохо, threshold — минимум.
 """
 import pytest
+import os
 from deepeval import assert_test
 # HallucinationMetric — сверяет actual_output с полем context.
 # Всё в ответе, чего НЕТ в context, judge считает галлюцинацией.
@@ -16,13 +17,23 @@ from evaluation.judge_model import GroqJudge
 #   1) через client → генерируем actual_output (роль SUT),
 #   2) внутри HallucinationMetric → judge оценивает ответ (роль оценщика).
 # Обе роли исполняет Groq, но концептуально это разные ответственности.
-from clients.groq_client import client
+from clients.groq_client import get_client
+from groq.types.chat import (
+    ChatCompletionMessageParam,
+    ChatCompletionSystemMessageParam,
+    ChatCompletionUserMessageParam,
+)
 
-pytestmark = pytest.mark.llm_judge
+pytestmark = [
+    pytest.mark.llm_judge,
+    pytest.mark.skipif(not os.getenv("GROQ_API_KEY"), reason="GROQ_API_KEY is not set"),
+]
 
-judge = GroqJudge()
+@pytest.fixture(scope="module")
+def judge():
+    return GroqJudge()
 
-def test_hallucination_legal_context():
+def test_hallucination_legal_context(judge):
     # context — СПИСОК строк, не строка. DeepEval поддерживает несколько кусков контекста
     # (аналог retrieved chunks в RAG). Тут один элемент — можно легко расширить до пяти.
     context = [
@@ -34,15 +45,22 @@ def test_hallucination_legal_context():
     # === Роль 1: SUT. Просим "вендорскую" модель ответить на юзер-вопрос. ===
     # В system-промпт кладём context[0] — единственный кусок; в реальном RAG сюда
     # уйдёт объединение всех retrieved docs.
-    response = client.chat.completions.create(
+    system_message: ChatCompletionSystemMessageParam = {
+        "role": "system",
+        "content": f"Отвечай только на основе этого текста закона: {context[0]}",
+    }
+    user_message: ChatCompletionUserMessageParam = {
+        "role": "user",
+        "content": "Сколько дней у меня есть на возврат товара?",
+    }
+    messages: list[ChatCompletionMessageParam] = [system_message, user_message]
+    response = get_client().chat.completions.create(
         model="openai/gpt-oss-20b",
-        messages=[
-            {"role": "system", "content": f"Отвечай только на основе этого текста закона: {context[0]}"},
-            {"role": "user", "content": "Сколько дней у меня есть на возврат товара?"}
-        ]
+        messages=messages,
 
     )
     actual_output = response.choices[0].message.content
+    assert actual_output is not None, "Groq returned a response without text content"
 
     # === Роль 2: сборка данных для оценки. ===
     # LLMTestCase несёт три поля, которые нужны HallucinationMetric:
