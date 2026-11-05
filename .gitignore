@@ -51,3 +51,5 @@ desktop.ini
 dist/
 build/
 *.egg-info/
+AI_LLM_EVALUATION_MENTOR_PROMPT.md
+LEARNING_PROGRESS.md
