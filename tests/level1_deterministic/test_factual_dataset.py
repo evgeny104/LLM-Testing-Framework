@@ -78,3 +78,8 @@ def test_answer_cites_expected_days(model_answer):
           f"Не найдено число {model_answer['expected_days']} "                                                                                                                                                                               
           f"в ответе: {model_answer['answer']!r}"
     )
+
+def test_answer_not_empty(model_answer):
+    assert model_answer["answer"].strip(), (
+        f"Ответ пустой: {model_answer['answer']!r}"
+    )
