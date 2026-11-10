@@ -62,12 +62,19 @@ evaluation/
 
 tests/
 ├── level1_deterministic/ # regex-проверки по эталонам, golden dataset
+├── level2_structured/    # валидация JSON-вывода по pydantic-схемам
 ├── level3_llm_judge/     # DeepEval: релевантность и галлюцинации
-└── level4_rag/           # RAGAS: Faithfulness на retrieval-контексте
+├── level4_rag/           # RAGAS: Faithfulness на retrieval-контексте
+├── level5_stability/     # повторные прогоны, стабильность метрик
+├── level6_robustness/    # перефразирование, prompt injection, jailbreak
+└── level7_agents/        # Skills/Tools, интеграции API и MCP
 
 scripts/
 └── list_models_grok.py   # утилита: список моделей Groq → output.json
 ```
+
+Уровни 2, 5–7 — в разработке: структура и маркеры готовы, тесты добавляются
+по плану из раздела «Дорожная карта».
 
 ## Уровни тестирования
 
@@ -93,13 +100,32 @@ scripts/
 | `llm_api` | вызывают Groq, без ключа пропускаются |
 | `llm_judge` | оценки DeepEval, расходуют токены |
 | `rag` | проверки RAGAS, расходуют токены |
+| `stability` | повторные прогоны, анализ стабильности |
+| `robustness` | перефразирование, injection, jailbreak |
+| `agents` | тесты агентов: Skills/Tools, MCP |
 
 ## Дорожная карта
 
-- [ ] Уровень 2: валидация структурированного вывода (JSON-схемы)
-- [ ] Устойчивость: перефразирование, prompt injection, jailbreak
-- [ ] Расширение RAG-метрик: context precision/recall, answer correctness
-- [ ] Стабильность метрик: повторные прогоны, допуски (threshold tuning)
+Каждый пункт привязан к инженерной задаче тестирования LLM:
+
+- [x] **Автотесты для LLM на Python/pytest** — уровень 1: фикстуры,
+      параметризация, эталоны, маркеры.
+- [ ] **Валидация JSON-структур по схемам** — уровень 2: instructor +
+      pydantic, модель отвечает строго типизированным объектом.
+- [x] **Релевантность и галлюцинации (DeepEval)** — уровень 3:
+      AnswerRelevancyMetric, HallucinationMetric.
+- [x] **Оценка через LLM-as-a-Judge** — уровень 3: кастомный judge
+      (GroqJudge) в интерфейсе DeepEvalBaseLLM.
+- [ ] **RAGAS: полнота контекста и точность ответов** — уровень 4:
+      добавить context precision/recall и answer correctness.
+- [ ] **Недетерминированность и стабильность** — уровень 5: повторные
+      прогоны, разброс ответов, допуски (threshold tuning).
+- [ ] **Устойчивость к перефразированию** — уровень 6: эталон сохраняется
+      при перефразированном вопросе.
+- [ ] **Защита от Prompt Injection и Jailbreak** — уровень 6: модель не
+      нарушает системный промпт под атакующими вставками.
+- [ ] **AI-агенты: Skills/Tools, MCP** — уровень 7: тестирование вызовов
+      инструментов и интеграций с внешними сервисами.
 
 ## Полезные команды
 
