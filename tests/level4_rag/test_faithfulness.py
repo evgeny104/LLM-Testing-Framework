@@ -1,6 +1,6 @@
 """
-Уровень 4 — RAGAS Faithfulness. Проверяет, что ответ модели опирается только на retrieval_context,
-а не на внутренние знания LLM.
+Уровень 4 — RAGAS Faithfulness. Проверяет, что ответ модели опирается только на
+retrieval_context, а не на внутренние знания LLM.
 """
 
 import pytest
@@ -11,13 +11,8 @@ from ragas import EvaluationDataset, SingleTurnSample, evaluate
 from ragas.llms import LangchainLLMWrapper
 from ragas.metrics import Faithfulness
 
-from clients.groq_client import get_client
+from clients.groq_client import complete
 from clients.mock_retriever import retrieve
-from groq.types.chat import (
-    ChatCompletionMessageParam,
-    ChatCompletionSystemMessageParam,
-    ChatCompletionUserMessageParam,
-)
 
 load_dotenv()
 
@@ -46,19 +41,13 @@ def test_faithfulness_minimal():
     question = "Сколько дней у меня есть на возврат товара?"
     contexts = retrieve(question, top_k=2)
 
-    system_message: ChatCompletionSystemMessageParam = {
-        "role": "system",
-        "content": "Отвечай только на основе этих статей закона:\n\n" + "\n\n".join(contexts),
-    }
-    user_message: ChatCompletionUserMessageParam = {"role": "user", "content": question}
-    messages: list[ChatCompletionMessageParam] = [system_message, user_message]
-    sut_response = get_client().chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=messages,
-        temperature=0,
+    answer = complete(
+        system_content=(
+            "Отвечай только на основе этих статей закона:\n\n"
+            + "\n\n".join(contexts)
+        ),
+        user_content=question,
     )
-    answer = sut_response.choices[0].message.content
-    assert answer is not None, "Groq returned a response without text content"
 
     sample = SingleTurnSample(
         user_input=question,
@@ -74,4 +63,3 @@ def test_faithfulness_minimal():
 
     score = result.to_pandas()["faithfulness"].iloc[0]
     assert score >= 0.5, f"Faithfulness score {score} below threshold 0.5"
-

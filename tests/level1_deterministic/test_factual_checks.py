@@ -4,15 +4,10 @@
 через parametrize. Учебная база: temperature=0 для воспроизводимости,
 system-промпт с директивой формата цитаты.
 """
-import re
 import os
+import re
 import pytest
-from clients.groq_client import get_client
-from groq.types.chat import (
-    ChatCompletionMessageParam,
-    ChatCompletionSystemMessageParam,
-    ChatCompletionUserMessageParam,
-)
+from clients.groq_client import complete
 
 pytestmark = [
     pytest.mark.llm_api,
@@ -25,29 +20,20 @@ CONTEXT = (
     "потребитель имеет право вернуть товар в течение 14 дней "
     "с момента покупки без объяснения причин."
 )
-BLOCKLIST = ["гарантирую", "100%", "бесплатно"]
 
 
 @pytest.fixture(scope="module")
 def model_answer():
-    system_message: ChatCompletionSystemMessageParam = {
-        "role": "system",
-        "content": (
+    answer = complete(
+        system_content=(
             f"Отвечай только на основе этого текста закона: {CONTEXT}. "
             "В ответе обязательно указывай номер статьи в формате 'Статья 15'."
         ),
-    }
-    user_message: ChatCompletionUserMessageParam = {"role": "user", "content": QUESTION}
-    messages: list[ChatCompletionMessageParam] = [system_message, user_message]
-    response = get_client().chat.completions.create(
-        model="openai/gpt-oss-20b",
-        temperature=0,
-        messages=messages,
+        user_content=QUESTION,
     )
-    answer = response.choices[0].message.content
-    assert answer is not None, "Groq returned a response without text content"
     print(answer)
     return answer
+
 
 @pytest.mark.parametrize("pattern, description", [
     (r"(?i)стать\w*\s*15", "цитата статьи"),
@@ -55,4 +41,6 @@ def model_answer():
     (r"(?i)возврат|верн\w*|возвращ\w*", "слово 'возврат'")
 ])
 def test_answer_matches_pattern(model_answer, pattern, description):
-    assert re.search(pattern, model_answer), f"В ответе не найдено: {description} . Ответ: {model_answer!r}"
+    assert re.search(pattern, model_answer), (
+        f"В ответе не найдено: {description}. Ответ: {model_answer!r}"
+    )
