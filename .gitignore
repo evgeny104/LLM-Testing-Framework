@@ -42,6 +42,9 @@ desktop.ini
 # Logs
 *.log
 
+# Script output
+output.json
+
 # Database
 *.db
 *.sqlite
