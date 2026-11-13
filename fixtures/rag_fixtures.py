@@ -18,6 +18,9 @@ def ragas_llm():
         base_url="https://api.groq.com/openai/v1",
         api_key=os.getenv("GROQ_API_KEY", "missing-api-key"),
         temperature=0,
-        max_tokens=8192,
+        max_tokens=4096,
+        # reasoning_effort="low": RAGAS-judge отвечает коротко — экономим токены
+        # бесплатного тарифа и снижаем риск обрыва генерации.
+        model_kwargs={"reasoning_effort": "low"},
     )
     return LangchainLLMWrapper(groq_llm)

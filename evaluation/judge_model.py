@@ -32,10 +32,13 @@ class GroqJudge(DeepEvalBaseLLM):
     def generate(self, prompt: str, schema: BaseModel) -> BaseModel:
         user_message: ChatCompletionUserMessageParam = {"role": "user", "content": prompt}
         messages: list[ChatCompletionMessageParam] = [user_message]
+        # reasoning_effort="low": судья отвечает коротким JSON — глубокие
+        # рассуждения только жгут токены (важно на бесплатном тарифе Groq).
         return self.client.chat.completions.create(
             model=self.model,
             messages=messages,
             response_model=schema,
+            reasoning_effort="low",
         )
 
     async def a_generate(self, prompt: str, schema: BaseModel) -> BaseModel:
