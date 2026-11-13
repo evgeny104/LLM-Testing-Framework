@@ -27,7 +27,7 @@ groq_llm = ChatOpenAI(
     base_url="https://api.groq.com/openai/v1",
     api_key=os.getenv("GROQ_API_KEY", "missing-api-key"),
     temperature=0,
-    max_tokens=4096,
+    max_tokens=8192,
 )
 
 ragas_llm = LangchainLLMWrapper(groq_llm)
