@@ -18,6 +18,7 @@ from deepeval.test_case import LLMTestCase
 #   2) внутри HallucinationMetric → judge оценивает ответ (роль оценщика).
 # Обе роли исполняет Groq, но концептуально это разные ответственности.
 from clients.groq_client import complete
+from data.legal_corpus import get_article
 
 pytestmark = [
     pytest.mark.llm_judge,
@@ -26,14 +27,10 @@ pytestmark = [
 
 
 def test_hallucination_legal_context(judge):
-    # context — СПИСОК строк, не строка. DeepEval поддерживает несколько кусков
-    # контекста (аналог retrieved chunks в RAG). Тут один элемент — можно легко
-    # расширить до пяти.
-    context = [
-        "Статья 15 закона о защите прав потребителей: "
-        "потребитель имеет право вернуть товар в течение 14 дней "
-        "с момента покупки без объяснения причин."
-    ]
+    # context — статья из базы знаний (тот же источник, что у golden dataset
+    # и RAG-тестов). СПИСОК строк, не строка: DeepEval поддерживает несколько
+    # кусков контекста (аналог retrieved chunks в RAG) — можно расширить.
+    context = [get_article("art_18_zpp")]
 
     # === Роль 1: SUT. Просим "вендорскую" модель ответить на юзер-вопрос. ===
     # В system-промпт кладём context[0] — единственный кусок; в реальном RAG

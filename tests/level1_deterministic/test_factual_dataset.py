@@ -1,8 +1,9 @@
 """Уровень 1: детерминированные проверки на МИНИ-DATASET из нескольких кейсов.
 
-Фикстура model_answer — из фабрики fixtures.llm_fixtures.make_model_answer
-(параметризована по CASES из golden_cases.py): один вызов Groq на кейс,
-тесты строят regex динамически из полей кейса.
+Фикстура model_answer — из фабрики fixtures.llm_fixtures.make_model_answer,
+параметризована по CASES (golden_cases.py). Контекст каждого кейса достаётся
+из базы знаний по article_id — эталон и контекст из одного источника.
+Тесты строят regex динамически из полей кейса.
 """
 import os
 import re
