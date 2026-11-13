@@ -1,13 +1,13 @@
 """Уровень 1: детерминированные проверки на МИНИ-DATASET из нескольких кейсов.
 
-Параметризованная фикстура `model_answer` пробегает по CASES (golden_cases.py),
-для каждого делает вызов Groq и возвращает dict с ответом + эталонами.
-Тесты строят regex ДИНАМИЧЕСКИ через f-string из полей кейса.
+Фикстура model_answer — из фабрики fixtures.llm_fixtures.make_model_answer
+(параметризована по CASES из golden_cases.py): один вызов Groq на кейс,
+тесты строят regex динамически из полей кейса.
 """
 import os
 import re
 import pytest
-from clients.groq_client import complete
+from fixtures.llm_fixtures import make_model_answer
 from tests.level1_deterministic.golden_cases import CASES
 
 pytestmark = [
@@ -15,19 +15,7 @@ pytestmark = [
     pytest.mark.skipif(not os.getenv("GROQ_API_KEY"), reason="GROQ_API_KEY is not set"),
 ]
 
-
-@pytest.fixture(scope="module", params=CASES, ids=[c["id"] for c in CASES])
-def model_answer(request):
-    case = request.param
-    answer = complete(
-        system_content=(
-            f"Отвечай только на основе этого текста закона: {case['context']}. "
-            f"В ответе обязательно указывай номер статьи в формате "
-            f"'Статья {case['expected_article']}'."
-        ),
-        user_content=case["question"],
-    )
-    return {**case, "answer": answer}
+model_answer = make_model_answer(CASES)
 
 
 def test_answer_cites_expected_article(model_answer):

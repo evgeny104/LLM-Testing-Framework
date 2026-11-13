@@ -1,20 +1,17 @@
 """
 Уровень 4 — RAGAS Faithfulness. Проверяет, что ответ модели опирается только на
 retrieval_context, а не на внутренние знания LLM.
+
+Фикстура ragas_llm — из conftest.py (реализация — fixtures/judge_fixtures.py).
 """
 
 import pytest
 import os
-from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
 from ragas import EvaluationDataset, SingleTurnSample, evaluate
-from ragas.llms import LangchainLLMWrapper
 from ragas.metrics import Faithfulness
 
 from clients.groq_client import complete
 from clients.mock_retriever import retrieve
-
-load_dotenv()
 
 pytestmark = [
     pytest.mark.rag,
@@ -22,22 +19,11 @@ pytestmark = [
 ]
 
 
-groq_llm = ChatOpenAI(
-    model="openai/gpt-oss-20b",
-    base_url="https://api.groq.com/openai/v1",
-    api_key=os.getenv("GROQ_API_KEY", "missing-api-key"),
-    temperature=0,
-    max_tokens=8192,
-)
-
-ragas_llm = LangchainLLMWrapper(groq_llm)
-
-
-def test_rag_wrapper_builds():
+def test_rag_wrapper_builds(ragas_llm):
     assert ragas_llm is not None
 
 
-def test_faithfulness_minimal():
+def test_faithfulness_minimal(ragas_llm):
     question = "Сколько дней у меня есть на возврат товара?"
     contexts = retrieve(question, top_k=2)
 

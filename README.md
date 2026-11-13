@@ -80,11 +80,17 @@ pytest -m llm_judge -v      # только оценки LLM-as-a-Judge
 ```
 clients/                  # Тестируемая система и её зависимости
 ├── groq_client.py        #   клиент к Groq API (SUT — модель под тестом)
-├── legal_corpus.py       #   синтетический корпус юридических статей
 └── mock_retriever.py     #   keyword-retriever (имитация vector store)
+
+data/
+└── legal_corpus.py       # база знаний: синтетический корпус юридических статей
 
 evaluation/
 └── judge_model.py        # обёртка Groq в интерфейс DeepEval (оценщик)
+
+fixtures/                 # реализации фикстур; регистрация — в conftest.py
+├── llm_fixtures.py       #   фабрики фикстур вызова Groq (параметризованные)
+└── judge_fixtures.py     #   judge-модель DeepEval и LLM-обёртка RAGAS
 
 tests/
 ├── level1_deterministic/ # regex-проверки по эталонам, golden dataset

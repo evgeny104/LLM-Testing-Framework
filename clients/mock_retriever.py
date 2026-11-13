@@ -5,7 +5,7 @@
 В проде заменяется на vector-search по эмбеддингам.
 """
 import re
-from clients.legal_corpus import LEGAL_CORPUS
+from data.legal_corpus import LEGAL_CORPUS
 
 _STOPWORDS = {
       "и", "в", "на", "с", "у", "о", "об", "к", "по", "за", "из", "от",

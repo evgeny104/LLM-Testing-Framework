@@ -1,13 +1,13 @@
 """Уровень 1: детерминированные проверки на ОДНОМ захардкоженном кейсе.
 
-Один вызов Groq в фикстуре module-scope → несколько regex-шаблонов
-через parametrize. Учебная база: temperature=0 для воспроизводимости,
-system-промпт с директивой формата цитаты.
+Фикстура model_answer — из фабрики fixtures.llm_fixtures.make_single_answer:
+один вызов Groq на файл (module-scope), ответ проверяется несколькими
+regex-шаблонами через parametrize. temperature=0 — воспроизводимость.
 """
 import os
 import re
 import pytest
-from clients.groq_client import complete
+from fixtures.llm_fixtures import make_single_answer
 
 pytestmark = [
     pytest.mark.llm_api,
@@ -21,18 +21,13 @@ CONTEXT = (
     "с момента покупки без объяснения причин."
 )
 
-
-@pytest.fixture(scope="module")
-def model_answer():
-    answer = complete(
-        system_content=(
-            f"Отвечай только на основе этого текста закона: {CONTEXT}. "
-            "В ответе обязательно указывай номер статьи в формате 'Статья 15'."
-        ),
-        user_content=QUESTION,
-    )
-    print(answer)
-    return answer
+model_answer = make_single_answer(
+    system_content=(
+        f"Отвечай только на основе этого текста закона: {CONTEXT}. "
+        "В ответе обязательно указывай номер статьи в формате 'Статья 15'."
+    ),
+    question=QUESTION,
+)
 
 
 @pytest.mark.parametrize("pattern, description", [
