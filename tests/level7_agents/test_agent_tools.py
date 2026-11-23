@@ -1,21 +1,21 @@
-"""Уровень 7: AI-агент — модель + инструменты (Skills/Tools).
+"""Уровень 7: AI-агент — модель + инструменты через нативный tool-calling.
 
-Агент решает, какой инструмент вызвать; исполняет вызов приложение.
-Инструменты — реестр TOOLS: имя → функция. Решение о вызове модель
-отдаёт через complete_structured (tool-calling на gpt-oss-20b ломан,
-структурированный вывод — нет).
+Цикл вызова инструмента (исполняет приложение, не модель):
+1. модель получает вопрос + объявление инструмента → отвечает tool_call;
+2. приложение выполняет вызванный инструмент (здесь — тест);
+3. результат возвращается модели → финальный ответ.
 
-Интеграция через MCP (внешний сервер инструментов) — в roadmap; здесь
-тот же контракт «модель выбирает инструмент → приложение исполняет»
-проверяется локально.
+Инструмент — retrieve: поиск статей по базе знаний.
+MCP-интеграция (внешний сервер инструментов) — в roadmap; здесь тот же
+контракт проверяется локальным инструментом.
 """
+import json
 import os
 import re
 import pytest
-from pydantic import BaseModel, Field
 
-from clients.groq_client import complete, complete_structured
-from clients.mock_retriever import retrieve
+from clients.groq_client import get_client, MODEL
+from clients.vector_store import retrieve
 
 pytestmark = [
     pytest.mark.agents,
@@ -25,63 +25,88 @@ pytestmark = [
 
 QUESTION = "Сколько дней у меня есть на возврат товара?"
 
-
-class ToolCall(BaseModel):
-    """Решение агента: какой инструмент вызвать и с каким аргументом."""
-    tool: str = Field(description="Имя инструмента: 'retrieve' или 'answer'")
-    question: str = Field(
-        description="Для retrieve — поисковый запрос; для answer — итоговый ответ."
-    )
-
-
-# Реестр инструментов агента (аног Skills/Tools): имя → функция.
-TOOLS = {
-    "retrieve": retrieve,
-}
-
+# Реальный паттерн RAG-агентов: system-промпт ОБЯЗЫВАЕТ искать в базе.
+# Без этого модель отвечает из памяти обучения (проверено: игнорирует
+# инструмент при tool_choice="auto").
 AGENT_SYSTEM_PROMPT = (
-    "Ты агент юридического ассистента с инструментом 'retrieve' — поиск "
-    "статей по базе знаний. Если для ответа нужен текст закона — вызови "
-    "retrieve с поисковым запросом. Иначе ответь сам через инструмент "
-    "'answer'. Ответ давай строго в формате JSON."
+    "Ты юридический ассистент. Перед ответом на любой вопрос о законе "
+    "обязательно ищи в базе знаний через инструмент retrieve. Отвечай "
+    "только на основе найденных статей."
 )
 
+# Объявление инструмента для модели: имя, описание, схема аргументов.
+RETRIEVE_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "retrieve",
+        "description": "Поиск релевантных статей закона по базе знаний",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Поисковый запрос"},
+            },
+            "required": ["query"],
+        },
+    },
+}
 
-def test_agent_chooses_retrieve_tool():
-    """Модель осознанно выбирает инструмент retrieve для юридического вопроса."""
-    decision = complete_structured(
-        ToolCall,
-        system_content=AGENT_SYSTEM_PROMPT,
-        user_content=QUESTION,
+
+def ask_agent(messages):
+    """Один шаг диалога с агентом в режиме tool-calling."""
+    return get_client().chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        tools=[RETRIEVE_TOOL],
+        tool_choice="auto",
+        temperature=0,
     )
-    assert decision.tool == "retrieve", (
-        f"Агент выбрал инструмент {decision.tool!r} вместо 'retrieve'"
-    )
-    assert decision.question.strip(), "Пустой поисковый запрос для retrieve"
+
+
+AGENT_MESSAGES = [
+    {"role": "system", "content": AGENT_SYSTEM_PROMPT},
+    {"role": "user", "content": QUESTION},
+]
+
+
+def test_agent_calls_retrieve_tool():
+    """Модель сама решает вызвать retrieve и передаёт осмысленный запрос."""
+    response = ask_agent(AGENT_MESSAGES)
+    tool_calls = response.choices[0].message.tool_calls
+    assert tool_calls, "Модель не вызвала инструмент, хотя вопрос требует поиска"
+    call = tool_calls[0]
+    assert call.function.name == "retrieve"
+    args = json.loads(call.function.arguments)
+    assert args["query"].strip(), "Пустой поисковый запрос"
 
 
 def test_agent_loop_answers_with_tool_result():
-    """Полный цикл агента: решение → вызов инструмента → ответ по результату.
+    """Полный цикл: tool_call → приложение исполняет → модель отвечает по результату."""
+    messages = list(AGENT_MESSAGES)
 
-    Исполнение инструмента — за приложением (здесь — тест), не за моделью.
-    """
-    decision = complete_structured(
-        ToolCall,
-        system_content=AGENT_SYSTEM_PROMPT,
-        user_content=QUESTION,
+    # Шаг 1: модель просит вызвать инструмент.
+    first = ask_agent(messages)
+    message = first.choices[0].message
+    assert message.tool_calls, (
+        f"Модель не вызвала инструмент, ответила: {str(message.content)[:100]!r}"
     )
-    assert decision.tool in TOOLS, f"Неизвестный инструмент: {decision.tool!r}"
+    tool_call = message.tool_calls[0]
+    args = json.loads(tool_call.function.arguments)
 
-    # Приложение исполняет выбранный инструмент:
-    contexts = TOOLS[decision.tool](decision.question, top_k=2)
+    # Шаг 2: приложение исполняет инструмент (модель это делать не умеет —
+    # она только текст; исполнение — всегда код).
+    contexts = retrieve(args["query"], top_k=2)
+    tool_result = "\n\n".join(contexts)
 
-    answer = complete(
-        system_content=(
-            "Отвечай только на основе этих статей закона:\n\n"
-            + "\n\n".join(contexts)
-        ),
-        user_content=QUESTION,
-    )
+    # Шаг 3: результат уходит модели в сообщении role="tool".
+    messages.append(first.choices[0].message)
+    messages.append({
+        "role": "tool",
+        "tool_call_id": tool_call.id,
+        "content": tool_result,
+    })
+    final = ask_agent(messages)
+    answer = final.choices[0].message.content
+
     cites_article = re.search(r"(?i)стать\w*\s*18", answer)
     cites_days = re.search(r"\b14\b", answer)
     assert cites_article and cites_days, (

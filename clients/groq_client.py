@@ -5,8 +5,10 @@ Groq играет две роли в проекте:
 - инфраструктура оценки (complete_structured) — instructor-клиент для
   структурированного вывода (уровень 2) и ответов судьи (уровень 3).
 
-JSON-режим instructor используем, т.к. tool-calling ломается на
-openai/gpt-oss-20b.
+Для structured-вызовов используем instructor в JSON-режиме: схему валидирует
+pydantic, при ошибке instructor повторяет запрос. (Нативный tool-calling на
+gpt-oss-20b работает — см. уровень 7; JSON-режим оставлен за judge'ем
+для простоты и контроля формата.)
 """
 import os
 from functools import lru_cache

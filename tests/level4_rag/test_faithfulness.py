@@ -8,10 +8,10 @@ retrieval_context, а не на внутренние знания LLM.
 import pytest
 import os
 from ragas import EvaluationDataset, SingleTurnSample, evaluate
-from ragas.metrics import Faithfulness
+from ragas.metrics.collections import Faithfulness
 
 from clients.groq_client import complete
-from clients.mock_retriever import retrieve
+from clients.vector_store import retrieve
 
 pytestmark = [
     pytest.mark.rag,

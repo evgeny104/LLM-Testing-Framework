@@ -2,7 +2,7 @@
 
 Реализует интерфейс DeepEvalBaseLLM: DeepEval зовёт .generate(prompt, schema).
 Структурированный вызов делегирует clients.groq_client.complete_structured
-(instructor в JSON-режиме — tool-calling ломается на openai/gpt-oss-20b).
+(instructor в JSON-режиме: pydantic-валидация схемы + повтор при ошибке).
 """
 from pydantic import BaseModel
 from deepeval.models.base_model import DeepEvalBaseLLM

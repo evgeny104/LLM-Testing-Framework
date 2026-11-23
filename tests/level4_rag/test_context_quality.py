@@ -11,12 +11,12 @@ import os
 import pytest
 from ragas import EvaluationDataset, SingleTurnSample, evaluate
 from ragas.metrics.collections import (
-    LLMContextPrecisionWithoutReference,
-    LLMContextRecall,
+    ContextPrecisionWithoutReference,
+    ContextRecall,
 )
 
 from clients.groq_client import complete
-from clients.mock_retriever import retrieve
+from clients.vector_store import retrieve
 from data.legal_corpus import get_article
 
 pytestmark = [
@@ -55,13 +55,13 @@ def test_context_precision_and_recall(ragas_llm):
     result = evaluate(
         dataset=dataset,
         metrics=[
-            LLMContextPrecisionWithoutReference(llm=ragas_llm),
-            LLMContextRecall(llm=ragas_llm),
+            ContextPrecisionWithoutReference(llm=ragas_llm),
+            ContextRecall(llm=ragas_llm),
         ],
     )
     row = result.to_pandas().iloc[0]
-    precision = row["llm_context_precision_without_reference"]
-    recall = row["llm_context_recall"]
+    precision = row["context_precision_without_reference"]
+    recall = row["context_recall"]
 
     assert precision >= PRECISION_THRESHOLD, (
         f"Context precision {precision} ниже порога {PRECISION_THRESHOLD}. "

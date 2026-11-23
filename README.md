@@ -54,12 +54,14 @@ pytest -m stability -v      # только уровень 5
 ## Структура проекта
 
 ```
-clients/                  # дверь к модели и поиск
+clients/                  # дверь к модели и векторная база
 ├── groq_client.py        #   complete() и complete_structured() — все вызовы Groq
-└── mock_retriever.py     #   keyword-retriever (имитация vector store)
+└── vector_store.py       #   локальная vector store: txt → векторы, косинусный поиск
+
+knowledge_base/           # база знаний: одна статья = один txt-файл
 
 data/
-└── legal_corpus.py       # база знаний: тексты статей, единый источник
+└── legal_corpus.py       # загрузчик базы знаний (txt → dict), единый источник
 
 evaluation/
 └── judge_model.py        # судья DeepEval (обёртка Groq для метрик)
