@@ -14,7 +14,7 @@ import os
 import re
 import pytest
 
-from agents.tools import AGENT_SYSTEM_PROMPT, TOOLS, ask_agent
+from core.agent import AGENT_SYSTEM_PROMPT, TOOLS, ask_agent
 
 pytestmark = [
     pytest.mark.agents,

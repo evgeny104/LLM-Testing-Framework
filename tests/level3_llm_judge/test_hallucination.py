@@ -11,7 +11,7 @@ from deepeval import assert_test
 from deepeval.metrics import HallucinationMetric
 from deepeval.test_case import LLMTestCase
 
-from llm.groq_client import complete
+from core.llm import complete
 from vectorstore import get_article
 
 pytestmark = [

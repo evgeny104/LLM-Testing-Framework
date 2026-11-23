@@ -1,6 +1,6 @@
 """Фикстуры модели-судьи DeepEval (уровень 3)."""
 import pytest
-from judge.judge_model import GroqJudge
+from core.judge import GroqJudge
 
 
 @pytest.fixture(scope="module")

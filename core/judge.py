@@ -1,13 +1,13 @@
 """Инфраструктура уровня 3: судья-модель для DeepEval-метрик.
 
 Реализует интерфейс DeepEvalBaseLLM: DeepEval зовёт .generate(prompt, schema).
-Структурированный вызов делегирует clients.groq_client.complete_structured
+Структурированный вызов делегирует core.llm.complete_structured
 (instructor в JSON-режиме: pydantic-валидация схемы + повтор при ошибке).
 """
 from pydantic import BaseModel
 from deepeval.models.base_model import DeepEvalBaseLLM
 
-from llm.groq_client import complete_structured
+from core.llm import complete_structured
 
 
 class GroqJudge(DeepEvalBaseLLM):

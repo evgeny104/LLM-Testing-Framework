@@ -7,7 +7,7 @@
 """
 import re
 import pytest
-from llm.groq_client import complete
+from core.llm import complete
 from vectorstore import get_article
 
 # Номер статьи извлекаем из текста корпуса — эталон и контекст из одного источника.

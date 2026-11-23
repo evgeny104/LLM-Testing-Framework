@@ -15,7 +15,7 @@ from ragas.metrics.collections import (
     ContextRecall,
 )
 
-from llm.groq_client import complete
+from core.llm import complete
 from vectorstore import retrieve
 from vectorstore import get_article
 

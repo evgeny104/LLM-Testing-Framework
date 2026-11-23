@@ -13,7 +13,7 @@ import re
 import pytest
 from pydantic import BaseModel
 
-from llm.groq_client import complete, complete_structured
+from core.llm import complete, complete_structured
 from vectorstore import get_article
 
 pytestmark = [

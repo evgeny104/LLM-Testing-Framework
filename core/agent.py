@@ -3,7 +3,7 @@
 Контракт агента: модель решает, какой инструмент вызвать и с какими
 аргументами; исполняет вызов приложение (см. реестр TOOLS).
 """
-from llm.groq_client import MODEL, get_client
+from core.llm import MODEL, get_client
 from vectorstore import retrieve
 
 # Объявление инструмента для модели: имя, описание, схема аргументов.

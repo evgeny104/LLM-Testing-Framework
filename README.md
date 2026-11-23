@@ -54,19 +54,15 @@ pytest -m stability -v      # только уровень 5
 ## Структура проекта
 
 ```
-llm/                      # дверь к модели
-└── groq_client.py        #   complete() и complete_structured() — все вызовы Groq
+core/                     # компоненты приложения
+├── llm.py                #   дверь к модели: complete() и complete_structured()
+├── judge.py              #   судья DeepEval (обёртка Groq для метрик)
+└── agent.py              #   агент: инструмент, реестр TOOLS, вызов, промпт
 
 vectorstore/              # векторная база знаний — всё о базе в одном месте
 ├── knowledge_base/       #   данные для загрузки: одна статья = один txt-файл
 ├── corpus.py             #   загрузчик txt → dict (ID = имя файла)
 └── store.py              #   VectorStore: векторы, косинусный поиск
-
-agents/                   # агент: инструменты, реестр, настройки, вызов
-└── tools.py              #   RETRIEVE_TOOL, TOOLS, ask_agent, system-промпт
-
-judge/                    # судья DeepEval — всё о судье в одном месте
-└── judge_model.py
 
 fixtures/                 # pytest-фикстуры; регистрация — в conftest.py
 ├── llm_fixtures.py       #   фабрики фикстур вызова модели

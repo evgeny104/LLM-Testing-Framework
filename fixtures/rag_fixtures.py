@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from ragas.llms import LangchainLLMWrapper
 
-from llm.groq_client import MODEL
+from core.llm import MODEL
 
 load_dotenv()
 

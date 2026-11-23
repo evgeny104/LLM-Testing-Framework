@@ -22,11 +22,11 @@
 
 - **Уровень 1** — regex по эталонам из golden dataset (`golden_cases.py`).
 - **Уровень 2** — объект `LegalAnswer`, валидированный pydantic-схемой.
-- **Уровень 3** — DeepEval-метрики; судья — `judge/judge_model.py`.
+- **Уровень 3** — DeepEval-метрики; судья — `core/judge.py`.
 - **Уровень 4** — RAGAS Faithfulness: опирается ли ответ на найденный контекст.
 - **Уровень 5** — повторные прогоны: стабильность при t=0, допуск при t>0.
 
-Общий вызов модели — `llm/groq_client.py`: `complete()` для текстовых
+Общий вызов модели — `core/llm.py`: `complete()` для текстовых
 ответов, `complete_structured()` для JSON по схеме (instructor, JSON-режим).
 
 ## RAG-пайплайн
