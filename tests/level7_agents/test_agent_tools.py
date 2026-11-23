@@ -14,8 +14,7 @@ import os
 import re
 import pytest
 
-from clients.groq_client import get_client, MODEL
-from clients.vector_store import retrieve
+from agents.tools import AGENT_SYSTEM_PROMPT, TOOLS, ask_agent
 
 pytestmark = [
     pytest.mark.agents,
@@ -24,43 +23,6 @@ pytestmark = [
 ]
 
 QUESTION = "Сколько дней у меня есть на возврат товара?"
-
-# Реальный паттерн RAG-агентов: system-промпт ОБЯЗЫВАЕТ искать в базе.
-# Без этого модель отвечает из памяти обучения (проверено: игнорирует
-# инструмент при tool_choice="auto").
-AGENT_SYSTEM_PROMPT = (
-    "Ты юридический ассистент. Перед ответом на любой вопрос о законе "
-    "обязательно ищи в базе знаний через инструмент retrieve. Отвечай "
-    "только на основе найденных статей."
-)
-
-# Объявление инструмента для модели: имя, описание, схема аргументов.
-RETRIEVE_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "retrieve",
-        "description": "Поиск релевантных статей закона по базе знаний",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "query": {"type": "string", "description": "Поисковый запрос"},
-            },
-            "required": ["query"],
-        },
-    },
-}
-
-
-def ask_agent(messages):
-    """Один шаг диалога с агентом в режиме tool-calling."""
-    return get_client().chat.completions.create(
-        model=MODEL,
-        messages=messages,
-        tools=[RETRIEVE_TOOL],
-        tool_choice="auto",
-        temperature=0,
-    )
-
 
 AGENT_MESSAGES = [
     {"role": "system", "content": AGENT_SYSTEM_PROMPT},
@@ -93,8 +55,9 @@ def test_agent_loop_answers_with_tool_result():
     args = json.loads(tool_call.function.arguments)
 
     # Шаг 2: приложение исполняет инструмент (модель это делать не умеет —
-    # она только текст; исполнение — всегда код).
-    contexts = retrieve(args["query"], top_k=2)
+    # она только текст; исполнение — всегда код через реестр TOOLS).
+    assert tool_call.function.name in TOOLS, f"Неизвестный инструмент: {tool_call.function.name!r}"
+    contexts = TOOLS[tool_call.function.name](args["query"], top_k=2)
     tool_result = "\n\n".join(contexts)
 
     # Шаг 3: результат уходит модели в сообщении role="tool".

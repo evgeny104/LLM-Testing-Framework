@@ -54,17 +54,19 @@ pytest -m stability -v      # только уровень 5
 ## Структура проекта
 
 ```
-clients/                  # дверь к модели и векторная база
-├── groq_client.py        #   complete() и complete_structured() — все вызовы Groq
-└── vector_store.py       #   локальная vector store: txt → векторы, косинусный поиск
+llm/                      # дверь к модели
+└── groq_client.py        #   complete() и complete_structured() — все вызовы Groq
 
-knowledge_base/           # база знаний: одна статья = один txt-файл
+vectorstore/              # векторная база знаний — всё о базе в одном месте
+├── knowledge_base/       #   данные для загрузки: одна статья = один txt-файл
+├── corpus.py             #   загрузчик txt → dict (ID = имя файла)
+└── store.py              #   VectorStore: векторы, косинусный поиск
 
-data/
-└── legal_corpus.py       # загрузчик базы знаний (txt → dict), единый источник
+agents/                   # агент: инструменты, реестр, настройки, вызов
+└── tools.py              #   RETRIEVE_TOOL, TOOLS, ask_agent, system-промпт
 
-evaluation/
-└── judge_model.py        # судья DeepEval (обёртка Groq для метрик)
+judge/                    # судья DeepEval — всё о судье в одном месте
+└── judge_model.py
 
 fixtures/                 # pytest-фикстуры; регистрация — в conftest.py
 ├── llm_fixtures.py       #   фабрики фикстур вызова модели
@@ -79,10 +81,10 @@ tests/
 │   └── test_days_regex_pattern.py  # чистый regex, офлайн
 ├── level2_structured/    # валидация JSON по pydantic-схеме
 ├── level3_llm_judge/     # DeepEval: релевантность и галлюцинации
-├── level4_rag/           # RAGAS Faithfulness на retrieval-контексте
+├── level4_rag/           # RAGAS: Faithfulness, context precision/recall
 ├── level5_stability/     # повторные прогоны, допуски
 ├── level6_robustness/    # перефразирование, prompt injection, jailbreak
-└── level7_agents/        # Skills/Tools, интеграции API и MCP
+└── level7_agents/        # агент: выбор инструмента, цикл вызова Tools
 
 scripts/
 └── list_models_grok.py   # утилита: список моделей Groq → output.json

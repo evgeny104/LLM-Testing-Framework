@@ -7,8 +7,8 @@
 """
 import re
 import pytest
-from clients.groq_client import complete
-from data.legal_corpus import get_article
+from llm.groq_client import complete
+from vectorstore import get_article
 
 # Номер статьи извлекаем из текста корпуса — эталон и контекст из одного источника.
 ARTICLE_NUMBER = re.compile(r"Статья (\d+)")

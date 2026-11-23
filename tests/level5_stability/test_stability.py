@@ -13,8 +13,8 @@ import re
 import pytest
 from pydantic import BaseModel
 
-from clients.groq_client import complete, complete_structured
-from data.legal_corpus import get_article
+from llm.groq_client import complete, complete_structured
+from vectorstore import get_article
 
 pytestmark = [
     pytest.mark.stability,

@@ -7,7 +7,7 @@
 from pydantic import BaseModel
 from deepeval.models.base_model import DeepEvalBaseLLM
 
-from clients.groq_client import complete_structured
+from llm.groq_client import complete_structured
 
 
 class GroqJudge(DeepEvalBaseLLM):

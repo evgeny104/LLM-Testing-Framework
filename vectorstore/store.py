@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from data.legal_corpus import LEGAL_CORPUS
+from vectorstore.corpus import LEGAL_CORPUS
 
 _DIM = 4096
 

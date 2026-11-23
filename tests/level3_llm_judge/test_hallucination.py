@@ -11,8 +11,8 @@ from deepeval import assert_test
 from deepeval.metrics import HallucinationMetric
 from deepeval.test_case import LLMTestCase
 
-from clients.groq_client import complete
-from data.legal_corpus import get_article
+from llm.groq_client import complete
+from vectorstore import get_article
 
 pytestmark = [
     pytest.mark.llm_judge,

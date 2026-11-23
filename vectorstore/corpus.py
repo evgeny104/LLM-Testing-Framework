@@ -6,7 +6,7 @@ RAG (векторная база), judge-метрики. ID статьи = им�
 """
 from pathlib import Path
 
-KNOWLEDGE_BASE_DIR = Path(__file__).resolve().parents[1] / "knowledge_base"
+KNOWLEDGE_BASE_DIR = Path(__file__).resolve().parent / "knowledge_base"
 
 
 def _load() -> dict[str, str]:

@@ -12,8 +12,8 @@ import os
 import pytest
 from pydantic import BaseModel
 
-from clients.groq_client import complete_structured
-from data.legal_corpus import get_article
+from llm.groq_client import complete_structured
+from vectorstore import get_article
 
 pytestmark = [
     pytest.mark.structured,

@@ -10,8 +10,8 @@ import os
 from ragas import EvaluationDataset, SingleTurnSample, evaluate
 from ragas.metrics.collections import Faithfulness
 
-from clients.groq_client import complete
-from clients.vector_store import retrieve
+from llm.groq_client import complete
+from vectorstore import retrieve
 
 pytestmark = [
     pytest.mark.rag,

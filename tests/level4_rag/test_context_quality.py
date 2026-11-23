@@ -15,9 +15,9 @@ from ragas.metrics.collections import (
     ContextRecall,
 )
 
-from clients.groq_client import complete
-from clients.vector_store import retrieve
-from data.legal_corpus import get_article
+from llm.groq_client import complete
+from vectorstore import retrieve
+from vectorstore import get_article
 
 pytestmark = [
     pytest.mark.rag,

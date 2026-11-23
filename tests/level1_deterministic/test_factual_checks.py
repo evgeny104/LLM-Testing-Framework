@@ -9,7 +9,7 @@ import os
 import re
 import pytest
 from fixtures.llm_fixtures import make_single_answer
-from data.legal_corpus import get_article
+from vectorstore import get_article
 
 pytestmark = [
     pytest.mark.llm_api,
