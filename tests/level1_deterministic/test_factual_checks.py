@@ -8,7 +8,7 @@ data/legal_corpus.py, тот же источник, что у golden dataset и 
 import os
 import re
 import pytest
-from fixtures.llm_fixtures import make_single_answer
+from test_fixtures.llm_fixtures import make_single_answer
 from vectorstore import get_article
 
 pytestmark = [

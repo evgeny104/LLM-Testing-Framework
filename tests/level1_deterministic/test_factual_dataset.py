@@ -8,7 +8,7 @@
 import os
 import re
 import pytest
-from fixtures.llm_fixtures import make_model_answer
+from test_fixtures.llm_fixtures import make_model_answer
 from tests.level1_deterministic.golden_cases import CASES
 
 pytestmark = [
