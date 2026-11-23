@@ -1,6 +1,6 @@
 """Уровень 1: детерминированные проверки на ОДНОМ кейсе из базы знаний.
 
-Фикстура model_answer — из фабрики fixtures.llm_fixtures.make_single_answer:
+Фикстура model_answer — из фабрики test_fixtures.llm_fixtures.make_single_answer:
 один вызов Groq на файл (module-scope), ответ проверяется несколькими
 regex-шаблонами через parametrize. Контекст — статья art_18_zpp из
 data/legal_corpus.py, тот же источник, что у golden dataset и RAG-тестов.

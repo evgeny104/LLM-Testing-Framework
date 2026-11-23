@@ -2,7 +2,7 @@
 Уровень 4 — RAGAS Faithfulness. Проверяет, что ответ модели опирается только на
 retrieval_context, а не на внутренние знания LLM.
 
-Фикстура ragas_llm — из conftest.py (реализация — fixtures/judge_fixtures.py).
+Фикстура ragas_llm — из conftest.py (реализация — test_fixtures/rag_fixtures.py).
 """
 
 import pytest
