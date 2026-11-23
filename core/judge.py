@@ -1,4 +1,5 @@
 """Инфраструктура уровня 3: судья-модель для DeepEval-метрик.
+     адаптер, чтобы DeepEval работал с groq.
 
 Реализует интерфейс DeepEvalBaseLLM: DeepEval зовёт .generate(prompt, schema).
 Структурированный вызов делегирует core.llm.complete_structured
